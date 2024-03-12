@@ -1,6 +1,5 @@
 # NIDR : Network Interference Detection and Rectification
 
-"""
 This project is currently in the development phase.
 
 README
@@ -26,22 +25,3 @@ Contributing
 1. Fork the repository.
 2. Create a new branch for your feature or bug fix.
 3. Make your changes and commit them.
-
-
-Please note that this project is still under development and may contain bugs or incomplete features. Feedback and contributions are welcome.
-
-"""
-1. Install the required dependencies by running `pip install -r requirements.txt`.
-2. Run the application using `python main.py`.
-
-
-Contributing
-------------
-1. Fork the repository.
-2. Create a new branch for your feature or bug fix.
-3. Make your changes and commit them.
-
-
-Please note that this project is still under development and may contain bugs or incomplete features. Feedback and contributions are welcome.
-
-"""
