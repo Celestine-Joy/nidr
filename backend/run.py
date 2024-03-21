@@ -27,4 +27,4 @@ for script in scripts:
 end_time = time.time()  # save end time
 elapsed_time = end_time - start_time  # calculate elapsed time
 
-print(f"Rund method Elapsed time: {elapsed_time} seconds")
+print(f"Run method Elapsed time: {elapsed_time} seconds")
