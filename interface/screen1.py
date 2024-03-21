@@ -36,8 +36,8 @@ class Center1(QWidget):
         super(Center1, self).__init__(parent)
         self.top_bar = top_bar 
 
-        self.table = QTableWidget(0, 5)
-        self.table.setHorizontalHeaderLabels(['Time', 'Source', 'Destination', 'Protocol', 'Length'])
+        self.table = QTableWidget(0, 6)
+        self.table.setHorizontalHeaderLabels(['Time', 'Source', 'Destination', 'Protocol', 'Length' , 'Info'])
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.table)
         self.setLayout(self.layout)
@@ -77,15 +77,15 @@ class Center1(QWidget):
         self.table.scrollToBottom()
 
     def get_protocol_color(self, protocol):
-        # Assign specific dark colors for different protocols
+        # Assign specific light colors for different protocols
         if protocol.lower() == 'tcp':
-            return QColor(128, 0, 0)  # Dark Red
+            return QColor(255, 0, 0)  # Light Red
         elif protocol.lower() == 'udp':
-            return QColor(0, 0, 128)  # Dark Blue
+            return QColor(255, 255, 0)  # Light Yellow
         elif protocol.lower() == 'icmp':
-            return QColor(128, 0, 128)  # Dark Violet
+            return QColor(255, 0, 255)  # Light Violet
         else:
-            return QColor(0, 0, 0)  # Black
+            return QColor(255, 165, 0)  # Orange
 
 
 class TopBar(QWidget):
@@ -210,6 +210,7 @@ class LeftBar(QWidget):
         subprocess.Popen(["python", interface+"packet_sniffer.py"])
         threading.Thread(target=run).start()
         self.center.start_sniffer()
+
         
         
 
@@ -218,13 +219,13 @@ class LeftBar(QWidget):
         threading.Thread(target=self.open_gnumeric).start()
 
     def open_gnumeric(self):
-        subprocess.Popen(['gnumeric', files+'output.csv'])
+        subprocess.Popen(['libreoffice', '--calc', files+'output.csv'])
 
     def attacklog_clicked(self):
         threading.Thread(target=self.open_gnumeric2).start()
 
     def open_gnumeric2(self):
-        subprocess.Popen(['gnumeric',files+'found_ips.csv'])
+        subprocess.Popen(['libreoffice', '--calc',files+'attack_source.csv'])
 
     def remove_clicked(self):
         file_path=files+'attack_source.csv'
