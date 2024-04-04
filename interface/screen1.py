@@ -21,6 +21,8 @@ from interface.packet_sniffer import PacketSnifferThread
 from interface.run import run
 import threading
 import os
+from backend.ipblock import block
+from backend.ipunblk import unblock
 
 files='files/'
 assets='assets/'
@@ -36,8 +38,8 @@ class Center1(QWidget):
         super(Center1, self).__init__(parent)
         self.top_bar = top_bar 
 
-        self.table = QTableWidget(0, 6)
-        self.table.setHorizontalHeaderLabels(['Time', 'Source', 'Destination', 'Protocol', 'Length' , 'Info'])
+        self.table = QTableWidget(0, 5)
+        self.table.setHorizontalHeaderLabels(['Time', 'Source', 'Destination', 'Protocol', 'Length'])
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.table)
         self.setLayout(self.layout)
@@ -52,7 +54,7 @@ class Center1(QWidget):
         self.sniffer_thread.start()
         self.incoming_count_changed.connect(self.top_bar.update_incoming)
         self.outgoing_count_changed.connect(self.top_bar.update_outgoing)
-        
+
 
     def update_display(self, packet):
         row_position = self.table.rowCount()
@@ -77,15 +79,15 @@ class Center1(QWidget):
         self.table.scrollToBottom()
 
     def get_protocol_color(self, protocol):
-        # Assign specific light colors for different protocols
+        # Assign specific dark colors for different protocols
         if protocol.lower() == 'tcp':
-            return QColor(255, 0, 0)  # Light Red
+            return QColor(128, 0, 0)  # Dark Red
         elif protocol.lower() == 'udp':
-            return QColor(255, 255, 0)  # Light Yellow
+            return QColor(0, 0, 128)  # Dark Blue
         elif protocol.lower() == 'icmp':
-            return QColor(255, 0, 255)  # Light Violet
+            return QColor(128, 0, 128)  # Dark Violet
         else:
-            return QColor(255, 165, 0)  # Orange
+            return QColor(0, 0, 0)  # Black
 
 
 class TopBar(QWidget):
@@ -98,14 +100,14 @@ class TopBar(QWidget):
         self.logo_label.setPixmap(scaled_pixmap)
         self.logo_label.setAlignment(Qt.AlignCenter)
 
-        
+
 
         self.incoming_label = QLabel("Incoming packets: 0")
         self.outgoing_label = QLabel("Outgoing packets: 0")
 
         self.layout = QHBoxLayout()
-        
-    
+
+
         self.layout.addWidget(self.incoming_label)
 
         self.layout.addWidget(self.logo_label)
@@ -120,9 +122,9 @@ class TopBar(QWidget):
             padding: 10px;
         """)
 
-    
 
-    
+
+
 
     def update_incoming(self, count):
         self.incoming_label.setText(f"Incoming packets: {count}")
@@ -187,7 +189,7 @@ class LeftBar(QWidget):
 
 
 
-        
+
 
         sidebar_layout.addStretch(1)
 
@@ -195,7 +197,7 @@ class LeftBar(QWidget):
 
 
 
-        
+
 
         # Apply dark theme stylesheet
         self.setStyleSheet("""
@@ -211,30 +213,30 @@ class LeftBar(QWidget):
         threading.Thread(target=run).start()
         self.center.start_sniffer()
 
-        
-        
+
 
 
     def calculationlog_clicked(self):
         threading.Thread(target=self.open_gnumeric).start()
 
     def open_gnumeric(self):
-        subprocess.Popen(['libreoffice', '--calc', files+'output.csv'])
+        subprocess.Popen(['gnumeric', files+'output.csv'])
 
     def attacklog_clicked(self):
         threading.Thread(target=self.open_gnumeric2).start()
 
     def open_gnumeric2(self):
-        subprocess.Popen(['libreoffice', '--calc',files+'attack_source.csv'])
+        subprocess.Popen(['gnumeric',files+'found_ips.csv'])
 
     def remove_clicked(self):
         file_path=files+'attack_source.csv'
+        threading.Thread(target=unblock).start()
         if os.path.exists(file_path):
                 with open(file_path, 'w') as file:
                     file.truncate(0)
 
 
-        
+
 
 
 class BottomBar(QWidget):
@@ -291,11 +293,11 @@ class BottomBar(QWidget):
     def network_filtering_off(self):
         self.label3.setText("Network filtering off")
         self.label3.setStyleSheet("background-color: blue;")
-        
-        
 
 
-        
+
+
+
 
 
 class Screen1(QWidget):
@@ -344,14 +346,15 @@ class Screen1(QWidget):
         self.show()
 
     def check_files(self):  # New method
-    
+
             if not os.path.isfile(files+'attack_source.csv') or os.stat(files+'attack_source.csv').st_size == 0:
                 self.bottom_bar.network_filtering_off()
             else:
                 self.bottom_bar.network_filtering_on()
+                threading.Thread(target=block).start()
+                
+
             if not os.path.isfile(files+'found_ips.csv') or os.stat(files+'found_ips.csv').st_size == 0:
                 self.bottom_bar.normal_traffic()
             else:
                 self.bottom_bar.attack_traffic()
-
-        

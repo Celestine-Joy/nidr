@@ -12,11 +12,16 @@ start_time = time.time()  # save start time
 # Directory where the models are stored
 models_dir = 'models'
 
-# Load the model
-model_name = 'model_tsyn'
-model_path = os.path.join(backend+models_dir, model_name + '.pkl')
-with open(model_path, 'rb') as file:
-    model = pickle.load(file)
+# Dictionary to store the models
+models = {}
+
+# Load all models
+for filename in os.listdir(backend+models_dir):
+    if filename.endswith('.pkl'):
+        with open(os.path.join(backend+models_dir, filename), 'rb') as file:
+            # The model name will be the filename without the extension
+            model_name = filename[:-4]
+            models[model_name] = pickle.load(file)
 
 def getfeaturename(df):
     names = df.columns.tolist()
@@ -94,13 +99,19 @@ def runml(df,count,pos,zero):
         combined = list(zip(fname, row))
         combined_dict = dict(combined)
         df_combined = pd.DataFrame(combined_dict, index=[0])
-        count=1+count
-        predictions = model.predict(df_combined)
-        if predictions == 1:
-            pos=1+pos
-            found_ips_df = pd.concat([found_ips_df, df.loc[i, ['Source IP', 'Destination IP', 'Source Port', 'Destination Port', 'Protocol']].to_frame().T])
-        else:
-            zero=1+zero
+        for model_name, model in models.items():
+            count=1+count
+            predictions = model.predict(df_combined)
+            if predictions == 1:
+                #print(f"found :{pos}")
+                print(f" found :{pos}, Detection made by model: {model_name}")
+                #print(df.loc[i, ['Source IP', 'Destination IP', 'Source Port', 'Destination Port', 'Protocol']])
+                pos=1+pos
+                #print("found")
+                found_ips_df = pd.concat([found_ips_df, df.loc[i, ['Source IP', 'Destination IP', 'Source Port', 'Destination Port', 'Protocol']].to_frame().T])
+                break  # Stop checking other models if a detection is made
+            else:
+                zero=1+zero
             
     return count,pos,zero,found_ips_df
 
@@ -121,6 +132,8 @@ else:
 
 df.head()
 print("count",count,"pos:",pos,"zero:",zero)
+
+# your code here
 
 end_time = time.time()  # save end time
 elapsed_time = end_time - start_time  # calculate elapsed time
